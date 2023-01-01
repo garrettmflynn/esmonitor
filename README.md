@@ -6,7 +6,7 @@
 This library uses three different methods for recognizing changes:
 1. **Wrapping functions** to allow for output interception
 2. **Adding setters** to objects, which are triggered on updates
-3. **Intermittent polling** for objects (e.g. ES Modules) that don't allow setters or redeclaration of functions.
+3. **Intermittent polling** for objects with read-only properties (e.g. ES Modules).
 
 ## Getting Started
 ```js

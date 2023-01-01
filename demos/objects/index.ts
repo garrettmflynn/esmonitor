@@ -1,4 +1,5 @@
 import * as core from '../../packages/core/index';
+import * as esm from './esm.js'
 
 export const messages = { 
     one: 'Hi',
@@ -14,12 +15,11 @@ export const functions = {
 
 // functions.three.__compose = true
 
-
-
 export const one = {
   test: 1, 
   active: false,
-  testFunction: functions.one
+  testFunction: functions.one,
+  esm
 }
 
 export const two = {
@@ -68,5 +68,6 @@ export const operations = [
       proxy.active = three.active
       proxy.testFunction = three.testFunction
       proxy.success = three.success
-    }
+    },
+    () => esm.default()
 ]

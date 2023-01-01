@@ -95,6 +95,7 @@ const registerInLookup = (id, name, sub, lookups) => {
             name,
             id 
         } // set in lookup
+
         if (!lookups.name[name]) lookups.name[name] = {}
         lookups.name[name][id] = sub
     }
@@ -179,7 +180,7 @@ export function setters (info: ListenerInfo, collection: ListenerPool, lookups?:
             try {
                 delete parent[info.last] // removing original definition
             }  catch (e) {
-                console.error('Unable to redeclare setters. May already be a dynamic object...')
+                // console.error('Unable to redeclare setters. May already be a dynamic object...')
                 redefine  = false
             }
 

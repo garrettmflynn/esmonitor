@@ -3,7 +3,7 @@ import * as objects from '../demos/objects/index'
 import { OperationsManager } from '../demos/utils';
 
 
-describe('The core ESCode helper functions behave appropriately on their own', () => {
+describe('Core esmonitor subscriptions behave appropriately', () => {
 
   const isStatic = true
   const manager = new OperationsManager(objects)
@@ -17,7 +17,7 @@ describe('The core ESCode helper functions behave appropriately on their own', (
   });
 
 
-  describe('merging into the original object has limited functionality', () => {
+  describe('changing properties on the original object has limited functionality', () => {
 
 
     let merged
@@ -58,7 +58,7 @@ describe('The core ESCode helper functions behave appropriately on their own', (
 
   })
 
-  describe('merging into the returned proxy has full functionality', () => {
+  describe('changing properties on the returned proxy has full functionality', () => {
 
     let merged;
     beforeAll(() => merged = manager.next());
@@ -94,6 +94,15 @@ describe('The core ESCode helper functions behave appropriately on their own', (
       expect((objects.one as any).success).toBe(proxy.success) 
     })
 
+  })
+
+  describe('esm objects are polled', () => {
+
+    test('internal property updates are caught', async () => {
+
+      const res = manager.next()
+      expect(objects.one.esm.value).toBe(res) 
+    })
   })
   
 })

@@ -80,16 +80,16 @@ export default class Monitor {
     getInfo = (label, callback, path, original) => {
 
         const info = listeners.info(label, callback, path, original, this.references, this.listeners, this.options)
-        const id = info.sub
+        const id = info.id
         const lookups = this.listeners.lookup
-        const name = getPath('absolute', info)
+        const name = getPath('relative', info)
         lookups.symbol[info.sub] = {
             name,
             id
         }
 
         if (!lookups.name[name]) lookups.name[name] = {}
-        lookups.name[name][id] = true
+        lookups.name[name][id] = info.sub
         
         return info
     }
@@ -160,34 +160,34 @@ export default class Monitor {
                 condition: (_, val) => toMonitorInternally(val)
             })
 
-            success = true
-        } 
-
-        // Case #2: Subscribe to specific property
-        let info;
-        try {
-            
-            // Force Polling
-            info = this.getInfo(id, callback, arrayPath, ref)
-
-            if (info && !success) {
-                if (__internalComplete.poll) success = this.poller.add(info)
-
-                // Direct Methods
-                else {
-
-                    let type = 'setters' // trigger setters
-                    if (typeof ref === 'function') type = 'functions' // intercept function calls
-
-                    success = this.add(type, info)
-                }
-            }
-            
-        } catch (e) {
-            console.error('Fallback to polling:', path, e)
-            success = this.poller.add(info)
-            // __internalComplete.poll = true
+            return subs
         }
+
+            // Case #2: Subscribe to specific property
+            let info;
+            try {
+                
+                // Force Polling
+                info = this.getInfo(id, callback, arrayPath, ref)
+
+                if (info && !success) {
+                    if (__internalComplete.poll) success = this.poller.add(info)
+
+                    // Direct Methods
+                    else {
+
+                        let type = 'setters' // trigger setters
+                        if (typeof ref === 'function') type = 'functions' // intercept function calls
+
+                        success = this.add(type, info)
+                    }
+                }
+                
+            } catch (e) {
+                // console.error('Fallback to polling:', path, e)
+                success = this.poller.add(info)
+                // __internalComplete.poll = true
+            }
         
 
         if (success) {
@@ -220,16 +220,23 @@ export default class Monitor {
     remove = (subs) => {
 
         // Clear All Subscriptions if None Specified
-        if (!subs) {
-            subs = {
-                ...this.listeners.functions,
-                ...this.listeners.setters,
-                ...this.listeners.polling,
-            }
+        if (subs === undefined) {
+
+            subs = {}
+            const refs = [this.listeners.functions, this.listeners.setters, this.listeners.polling]
+            refs.forEach(ref => {
+                for (let key in ref) {
+                    for (let key2 in ref[key]) {
+                        const thisSubs = ref[key][key2]
+                        const symbols = Object.getOwnPropertySymbols(thisSubs)
+                        symbols.forEach(symbol => {
+                            const info = thisSubs[symbol]
+                            subs[info.path.absolute.join(this.options.keySeparator)] = symbol
+                        })
+                    }
+                }
+            })
         }
-
-
-        if (typeof subs!== 'object') subs = { sub: subs }
 
         for (let key in subs) {
 
@@ -240,7 +247,7 @@ export default class Monitor {
                 if (res === false) console.warn(`Subscription for ${key} does not exist.`, sub)
             }
 
-            if (typeof innerSub !== 'symbol') iterateSymbols(innerSub, handleUnsubscribe)
+            if (typeof innerSub !== 'symbol') console.error('Invalid object', key, innerSub)
             else handleUnsubscribe(innerSub)
         }
 
@@ -248,7 +255,10 @@ export default class Monitor {
     }
 
     unsubscribe = (sub) => {
-            const info = this.listeners.lookup.symbol[sub]
+            const symbolLookup = this.listeners.lookup.symbol
+            const nameLookup = this.listeners.lookup.name
+
+            const info = symbolLookup[sub]
             const absPath = info.name
 
             // Remove from Polling listeners
@@ -287,10 +297,12 @@ export default class Monitor {
                 }
             } else return false
 
-            delete this.listeners.lookup.symbol[sub] // Remove from global listener collection
+            delete symbolLookup[sub] // Remove from global listener collection
 
-            const nameLookup = this.listeners.lookup.name[info.name] // TODO: See if this is still correct
-            delete nameLookup[info.id]
-            if (!Object.getOwnPropertyNames(nameLookup).length )delete this.listeners.lookup.name[info.name]
+            const nameInfo = nameLookup[info.name] // TODO: See if this is still correct
+
+            delete nameInfo[info.id]
+
+            if (!Object.keys(nameInfo).length) delete this.listeners.lookup.name[info.name]
     }
 }

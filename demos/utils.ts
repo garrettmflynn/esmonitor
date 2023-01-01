@@ -165,7 +165,9 @@ export class OperationsManager {
             else {
                 if (command.header) log.addHeader(command.header)
                 if (command.name) log.addCommand(command.name)
-                return command.function.call(this)
+                const res = command.function.call(this)
+                console.log('Result', res, command.function.toString())
+                return res
             }
         }
     }

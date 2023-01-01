@@ -55,7 +55,7 @@ export type ActiveInfo = {
 
 
 export type ListenerInfo = {
-    id: symbol //string
+    id: symbol | string
     last: string,
     infoToOutput: Info,
     callback: (path: string, info:ActiveInfo, output: any[]) => void,
@@ -81,10 +81,10 @@ export type Lookup<keyType, valueType> = {
 
 export type SymbolLookupValue = {
     name: string,
-    id: symbol
+    id: symbol | string
 }
 
-export type NameLookupValue = {[x: symbol]: true}
+export type NameLookupValue = {[x: symbol]: symbol}
 
 export type ListenerLookups = {
     symbol: Lookup<symbol, SymbolLookupValue>,
