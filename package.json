@@ -1,6 +1,6 @@
 {
   "name": "esmonitor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Monitor ESM objects for changes",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
