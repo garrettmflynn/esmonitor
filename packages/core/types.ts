@@ -27,8 +27,8 @@ export type SetValueOptions = {
 }
 
 export type pathComponent = string | symbol
-export type ArrayPath = (string | symbol)[]
-export type PathFormat = pathComponent | (string | symbol)[]
+export type ArrayPath = (pathComponent)[]
+export type PathFormat = pathComponent | ArrayPath
 
 export type PollingOptions = {
     force?: boolean,
